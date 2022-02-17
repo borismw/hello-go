@@ -36,16 +36,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build image and push to Docker Hub and GitHub Container Registry
+      - name: Check out if Docker image builds
         uses: docker/build-push-action@v2
         with:
-          # relative path to the place where source code with Dockerfile is located
           context: .
-          # Note: tags has to be all lower-case
+          # The version increase step can only take place if this step has run through successfully.
+          # One way to deal with this could be to push under the current commit-hash and re-tag it in a later step.
+          # Currently the build step takes place twice which is a waste of resources.
           tags: |
-            awamob/hello-go:latest
+            awamob/hello-go:deleteme
           # build on feature branches, push only on main branch
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: false
+
       - name: Automated Version Bump
         id: version-bump
         uses: anothrNick/github-tag-action@1.36.0
@@ -53,3 +55,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DRY_RUN: ${{ github.ref != 'refs/heads/main' }}
       - run: echo "Version tag generated for this build is ${{ steps.version-bump.outputs.new_tag }}, but only applied if on main branch."
+
+      - name: Build image and push to Docker Hub Container Registry
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          # Note: tags has to be all lower-case
+          tags: |
+            awamob/hello-go:${{ steps.version-bump.outputs.new_tag }}
+          # build on feature branches, push only on main branch
+          push: ${{ github.ref == 'refs/heads/main' }}
