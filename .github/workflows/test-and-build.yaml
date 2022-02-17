@@ -71,7 +71,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           repository: borismw/hello-infra
           event-type: update-version
           client-payload: '{ "k8s_namespace": "hello-go", "k8s_project": "hello-go", "env": "production", "docker_repo": "awamob/hello-go", "new_version": "${{ steps.version-bump.outputs.new_tag }}" }'
