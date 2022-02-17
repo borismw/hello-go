@@ -12,4 +12,3 @@ run:
 test:
 	(cd cmd/hello; $(GOTEST))
 
-
